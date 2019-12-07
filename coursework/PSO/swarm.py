@@ -19,15 +19,16 @@ END
 
 class Swarm:
 
-    def __init__(self, inertia, cognitive, social):
+    def __init__(self, inertia, cognitive, social, num_particles):
         self.train_data, self.train_targets = load_data("cwk_train")
         self.train_targets = list(self.train_targets)
+        self.num_particles = num_particles
         self.inertia = inertia
         self.cognitive = cognitive
         self.social = social
         # initialise population
         self.particles = []
-        for i in range(len(self.train_data)):
+        for i in range(self.num_particles):
             self.particles.append(Particle())
 
     def estimate(self, position, sample):
@@ -101,8 +102,8 @@ class Swarm:
             self.update_personal_bests()
 
 
-swarm = Swarm(0.721, 1.1193, 1.1193)
-swarm.run(300)
+swarm = Swarm(0.721, 1.1193, 1.1193, 38)
+swarm.run(600)
 print(swarm.global_best_value)
 weights = swarm.global_best_position
 
@@ -111,3 +112,4 @@ sample = list(test_data[0])
 pred = swarm.estimate(weights, sample)
 print("Pred: {}".format(pred))
 print("Real: {}".format(test_target[0]))
+print(weights)
