@@ -1,25 +1,15 @@
-from random import random
+import numpy as np
 
 
 class Particle:
-    """
-    A particle will represent a weight. Which will
-    be a single integer.
-    """
 
     def __init__(self):
-        self.position = 1
-        self.pbest_position = self.position
-        self.pbest_value = float('inf')
-        self.velocity = abs(self.position - random()) / 2
+        pos = np.random.rand(13)
+        vel = np.random.rand(13)
+        self.position = list(pos)
+        self.velocity = list(abs(pos - vel) / 2)
+        self.position_value = None
 
-    def move(self):
-        self.position = self.position + self.velocity
-
-
-# p1 = Particle()
-# p2 = Particle()
-# print(p1.position)
-# print(p1.velocity)
-# print(p2.position)
-# print(p2.velocity)
+    def set_personal_best(self):
+        self.personal_best_position = self.position
+        self.personal_best_value = self.position_value
