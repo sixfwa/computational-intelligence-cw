@@ -14,13 +14,14 @@ train_targets = list(train_targets)
 
 class GeneticAlgorithm:
 
-    def __init__(self, pop_size, elite_size, rate, gens):
+    def __init__(self, pop_size, elite_size, K, rate, gens):
         self.train_data, self.train_targets = load_data("cwk_train")
         self.train_targets = list(self.train_targets)
         self.pop_size = pop_size
         self.elite_size = elite_size
         self.rate = rate
         self.gens = gens
+        self.K = K
         self.population = []
 
     def initialise_population(self):
@@ -62,8 +63,7 @@ class GeneticAlgorithm:
             self.elite[best[0]] = best[1]
 
     def breed(self, parent_1, parent_2):
-        child = [0] * len(parent_1)
-
+        child_1 = [0] * len(parent_1)
         gene_a = 0
         gene_b = 0
         while gene_a == gene_b:
@@ -72,30 +72,39 @@ class GeneticAlgorithm:
 
         start_gene = min(gene_a, gene_b)
         end_gene = max(gene_a, gene_b)
-
+        # Child 1
         for i in range(start_gene, end_gene + 1):
-            child[i] = parent_1[i]
+            child_1[i] = parent_1[i]
 
+        # Child 1
         for i in range(len(parent_2)):
             if i not in range(start_gene, end_gene + 1):
-                child[i] = parent_2[i]
+                child_1[i] = parent_2[i]
 
         missing = list(set(parent_2) - set(parent_1))
         count = 0
-        for i in range(len(child)):
-            if child[i] == 0:
-                child[i] = missing[count]
+        for i in range(len(child_1)):
+            if child_1[i] == 0:
+                child_1[i] = missing[count]
                 count += 1
 
-        return tuple(child)
+        child_2 = parent_1 + parent_2
+        child_2 = list(child_2)
+        for elem in child_1:
+            if elem in child_2:
+                child_2.remove(elem)
+
+        return tuple(child_1), tuple(child_2)
 
     def breed_population(self):
         children = []
         elite_individuals = [ind for ind in self.elite]
         for i in range(len(elite_individuals)):
-            child = self.breed(
+            child_1, child_2 = self.breed(
                 elite_individuals[i], elite_individuals[len(elite_individuals) - i - 1])
-            children.append(child)
+            children.append(child_1)
+            children.append(child_2)
+
         return children
 
     def mutate(self, child):
@@ -138,7 +147,8 @@ class GeneticAlgorithm:
 
     def run(self):
         self.initialise_population()
-        self.selection_by_tournament(5)
+        self.selection_by_tournament(self.K)
+
         for i in range(self.gens):
             self.breed_population()
             self.mutate_children()
@@ -146,39 +156,7 @@ class GeneticAlgorithm:
         return min(self.elite.items(), key=operator.itemgetter(1))
 
 
-ga = GeneticAlgorithm(pop_size=100, elite_size=10, rate=0.1, gens=500)
+ga = GeneticAlgorithm(pop_size=100, elite_size=5, K=10, rate=0.1, gens=1000)
+
 
 print(ga.run())
-# ga.initialise_population()
-# ranked = ga.rank_population()
-# ga.selection_by_tournament(5)
-# print(ga.elite)
-# ga.selection_by_tournament(2)
-# children = ga.breed_population()
-# print(len(children))
-# best = ga.run()
-# print(ga.elite)
-# best = ga.run()
-# print(best)
-# elite size = elite_size * K < population
-
-# ga.selection_by_tournament(ranked, 5)
-# parents = []
-# for ind in ga.elite:
-#     parents.append(ind)
-
-# for k, v in ga.elite.items():
-#     print(v)
-
-# print()
-# a = sorted(ga.elite.items(), key=operator.itemgetter(1))[:3]
-# print(type(a))
-# for i in a:
-#     print(i[1])
-# print()
-# p1 = parents[0]
-# p2 = parents[1]
-# child = ga.breed(p1, p2)
-# print("Parent 1 Cost: {}".format(ga.cost_function(p1)))
-# print("Parent 2 Cost: {}".format(ga.cost_function(p2)))
-# print("Child Cost: {}".format(ga.cost_function(child)))
