@@ -2,10 +2,6 @@ from tools import load_data
 import numpy as np
 import operator
 import random
-# TODO - Initialise population with random candidate solutions DONE
-# TODO - Write cost function DONE
-# TODO - Evaluate each candidate DONE
-# TODO - Sort population with the best to worst
 
 # Load training data and targets
 train_data, train_targets = load_data("cwk_train")
@@ -14,15 +10,15 @@ train_targets = list(train_targets)
 
 class GeneticAlgorithm:
 
-    def __init__(self, pop_size, elite_size, K, rate, gens):
+    def __init__(self, pop_size, elite_size, K, gens):
         self.train_data, self.train_targets = load_data("cwk_train")
         self.train_targets = list(self.train_targets)
         self.pop_size = pop_size
         self.elite_size = elite_size
-        self.rate = rate
         self.gens = gens
         self.K = K
         self.population = []
+        self.history = []
 
     def initialise_population(self):
         n = len(train_data[0])
@@ -118,15 +114,6 @@ class GeneticAlgorithm:
         genotype_two = child[location_2]
         child[location_1] = genotype_two
         child[location_2] = genotype_one
-        # for swapped in range(len(child)):
-        #     if (random.random() < self.rate):
-        #         swap_with = int(random.random() * len(child))
-
-        #         location_1 = child[swapped]
-        #         location_2 = child[swap_with]
-
-        #         child[swapped] = location_2
-        #         child[swap_with] = location_1
 
         return tuple(child)
 
@@ -150,9 +137,10 @@ class GeneticAlgorithm:
         new_elite = {}
         for i in range(self.elite_size):
             new_elite[sorted_elite[i][0]] = sorted_elite[i][1]
-        # for item in sorted_elite:
-            # new_elite[item[0]] = item[1]
         self.elite = new_elite
+        gen_best = sorted(self.elite.items(),
+                          key=operator.itemgetter(1))[0]
+        self.history.append(gen_best[1])
 
     def run(self):
         self.initialise_population()
@@ -165,7 +153,8 @@ class GeneticAlgorithm:
         return min(self.elite.items(), key=operator.itemgetter(1))
 
 
-ga = GeneticAlgorithm(pop_size=10, elite_size=5, K=1, rate=0.1, gens=1)
+ga = GeneticAlgorithm(pop_size=10, elite_size=5, K=1, gens=6)
 
 
 print(ga.run())
+print(ga.history)
