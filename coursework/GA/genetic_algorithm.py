@@ -109,15 +109,15 @@ class GeneticAlgorithm:
 
     def mutate(self, child):
         child = list(child)
-        geno_1 = 0
-        geno_2 = 0
-        while geno_1 == geno_2:
-            geno_1 = int(random.random() * len(child))
-            geno_2 = int(random.random() * len(child))
-        genotype_one = child[geno_1]
-        genotype_two = child[geno_2]
-        child[geno_1] = genotype_two
-        child[geno_2] = genotype_one
+        location_1 = 0
+        location_2 = 0
+        while location_1 == location_2:
+            location_1 = int(random.random() * len(child))
+            location_2 = int(random.random() * len(child))
+        genotype_one = child[location_1]
+        genotype_two = child[location_2]
+        child[location_1] = genotype_two
+        child[location_2] = genotype_one
         # for swapped in range(len(child)):
         #     if (random.random() < self.rate):
         #         swap_with = int(random.random() * len(child))
