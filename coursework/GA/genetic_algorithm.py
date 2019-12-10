@@ -109,15 +109,24 @@ class GeneticAlgorithm:
 
     def mutate(self, child):
         child = list(child)
-        for swapped in range(len(child)):
-            if (random.random() < self.rate):
-                swap_with = int(random.random() * len(child))
+        geno_1 = 0
+        geno_2 = 0
+        while geno_1 == geno_2:
+            geno_1 = int(random.random() * len(child))
+            geno_2 = int(random.random() * len(child))
+        genotype_one = child[geno_1]
+        genotype_two = child[geno_2]
+        child[geno_1] = genotype_two
+        child[geno_2] = genotype_one
+        # for swapped in range(len(child)):
+        #     if (random.random() < self.rate):
+        #         swap_with = int(random.random() * len(child))
 
-                location_1 = child[swapped]
-                location_2 = child[swap_with]
+        #         location_1 = child[swapped]
+        #         location_2 = child[swap_with]
 
-                child[swapped] = location_2
-                child[swap_with] = location_1
+        #         child[swapped] = location_2
+        #         child[swap_with] = location_1
 
         return tuple(child)
 
@@ -156,7 +165,7 @@ class GeneticAlgorithm:
         return min(self.elite.items(), key=operator.itemgetter(1))
 
 
-ga = GeneticAlgorithm(pop_size=100, elite_size=5, K=10, rate=0.1, gens=1000)
+ga = GeneticAlgorithm(pop_size=10, elite_size=5, K=1, rate=0.1, gens=1)
 
 
 print(ga.run())
