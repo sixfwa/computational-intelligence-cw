@@ -2,6 +2,7 @@ from tools import load_data
 import numpy as np
 import operator
 import random
+import time
 
 # Load training data and targets
 train_data, train_targets = load_data("cwk_train")
@@ -12,7 +13,9 @@ class GeneticAlgorithm:
 
     def __init__(self, pop_size, elite_size, K, gens):
         self.train_data, self.train_targets = load_data("cwk_train")
+        self.test_data, self.test_targets = load_data("cwk_test")
         self.train_targets = list(self.train_targets)
+        self.test_targets = list(self.test_targets)
         self.pop_size = pop_size
         self.elite_size = elite_size
         self.gens = gens
@@ -23,7 +26,10 @@ class GeneticAlgorithm:
     def initialise_population(self):
         n = len(train_data[0])
         for i in range(self.pop_size):
-            self.population.append(tuple(np.random.rand(n)))
+            ind = []
+            for i in range(13):
+                ind.append(random.uniform(-1, 1))
+            self.population.append(tuple(ind))
 
     def estimate(self, individual, train_index):
         return sum([a * b for a, b in zip(individual, train_data[train_index])])
@@ -138,8 +144,7 @@ class GeneticAlgorithm:
         for i in range(self.elite_size):
             new_elite[sorted_elite[i][0]] = sorted_elite[i][1]
         self.elite = new_elite
-        gen_best = sorted(self.elite.items(),
-                          key=operator.itemgetter(1))[0]
+        gen_best = min(self.elite.items(), key=operator.itemgetter(1))
         self.history.append(gen_best[1])
 
     def run(self):
@@ -152,9 +157,25 @@ class GeneticAlgorithm:
             self.next_generation()
         return min(self.elite.items(), key=operator.itemgetter(1))
 
+    def timed_run(self, seconds):
+        start = time.time()
+        finish = start + seconds
+        generations = 0
+        self.initialise_population()
+        self.selection_by_tournament(self.K)
+        while start < finish:
+            self.breed_population()
+            self.mutate_children()
+            self.next_generation()
+            generations += 1
+            start = time.time()
+        return min(self.elite.items(), key=operator.itemgetter(1)), generations
 
-ga = GeneticAlgorithm(pop_size=10, elite_size=5, K=1, gens=6)
+    def test(self):
+        best = min(self.elite.items(), key=operator.itemgetter(1))[0]
+        n = len(self.test_targets)
+        total = 0
+        for i in range(n):
+            total += abs(self.estimate(best, i) - self.train_targets[i])
 
-
-print(ga.run())
-print(ga.history)
+        return (1 / n) * total
