@@ -1,5 +1,5 @@
 from tools import load_data
-from particle import Particle
+from PSO.particle import Particle
 import random
 import time
 """
@@ -112,18 +112,3 @@ class Swarm:
             self.update_velocity()
             self.move_particles()
             self.update_personal_bests()
-
-
-swarm = Swarm(0.721, 1.1193, 1.1193, 38)
-swarm.timed_run(20)
-print(swarm.global_best_value)
-# swarm.run(600)
-# print(swarm.global_best_value)
-# weights = swarm.global_best_position
-
-# test_data, test_target = load_data("cwk_test")
-# sample = list(test_data[0])
-# pred = swarm.estimate(weights, sample)
-# print("Pred: {}".format(pred))
-# print("Real: {}".format(test_target[0]))
-# print(weights)
