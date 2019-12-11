@@ -1,6 +1,7 @@
 from tools import load_data
 from particle import Particle
 import random
+import time
 """
 Pseudocode
 BEGIN
@@ -93,6 +94,17 @@ class Swarm:
                 a + b for a, b in zip(particle.position, particle.velocity)]
             particle.position_value = self.evaluate_particle_position(particle)
 
+    def timed_run(self, seconds):
+        start = time.time()
+        finish = start + seconds
+        self.set_particle_costs()
+        while start < finish:
+            self.set_global_best()
+            self.update_velocity()
+            self.move_particles()
+            self.update_personal_bests()
+            start = time.time()
+
     def run(self, iterations):
         self.set_particle_costs()
         for k in range(iterations):
@@ -103,13 +115,15 @@ class Swarm:
 
 
 swarm = Swarm(0.721, 1.1193, 1.1193, 38)
-swarm.run(600)
+swarm.timed_run(20)
 print(swarm.global_best_value)
-weights = swarm.global_best_position
+# swarm.run(600)
+# print(swarm.global_best_value)
+# weights = swarm.global_best_position
 
-test_data, test_target = load_data("cwk_test")
-sample = list(test_data[0])
-pred = swarm.estimate(weights, sample)
-print("Pred: {}".format(pred))
-print("Real: {}".format(test_target[0]))
-print(weights)
+# test_data, test_target = load_data("cwk_test")
+# sample = list(test_data[0])
+# pred = swarm.estimate(weights, sample)
+# print("Pred: {}".format(pred))
+# print("Real: {}".format(test_target[0]))
+# print(weights)
