@@ -23,6 +23,8 @@ class Swarm:
     def __init__(self, inertia, cognitive, social, num_particles):
         self.train_data, self.train_targets = load_data("cwk_train")
         self.train_targets = list(self.train_targets)
+        self.test_data, self.test_targets = load_data("cwk_test")
+        self.test_targets = list(self.test_targets)
         self.num_particles = num_particles
         self.inertia = inertia
         self.cognitive = cognitive
@@ -112,3 +114,20 @@ class Swarm:
             self.update_velocity()
             self.move_particles()
             self.update_personal_bests()
+
+    def test(self):
+        cost = 0
+        for i in range(len(self.test_targets)):
+            pred = sum(
+                [a * b for a, b in zip(self.global_best_position, list(self.test_data[i]))])
+            print("Target: {}\tPrediction: {}".format(
+                self.test_targets[i], pred))
+            cost += abs(pred - self.test_targets[i])
+
+        print("Test Cost: {}".format(cost * (1 / len(self.test_targets))))
+
+    # def test(self):
+        # n = len(self.test_targets)
+        # total = 0
+        # for i in range(n):
+        # total += abs(self.estimate(self.global_best_position, i) - )
