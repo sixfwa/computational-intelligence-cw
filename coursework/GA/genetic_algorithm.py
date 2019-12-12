@@ -11,34 +11,36 @@ train_targets = list(train_targets)
 
 class GeneticAlgorithm:
 
-    def __init__(self, pop_size, elite_size, K, gens):
+    def __init__(self, pop_size, elite_size, K, upper, lower, seconds):
         self.train_data, self.train_targets = load_data("cwk_train")
         self.test_data, self.test_targets = load_data("cwk_test")
         self.train_targets = list(self.train_targets)
         self.test_targets = list(self.test_targets)
         self.pop_size = pop_size
         self.elite_size = elite_size
-        self.gens = gens
+        self.upper = upper
+        self.lower = lower
+        self.seconds = seconds
         self.K = K
         self.population = []
-        self.history = []
 
     def initialise_population(self):
         n = len(train_data[0])
         for i in range(self.pop_size):
             ind = []
             for i in range(13):
-                ind.append(random.uniform(-1, 1))
+                ind.append(random.uniform(-3, 3))
             self.population.append(tuple(ind))
 
     def estimate(self, individual, train_index):
-        return sum([a * b for a, b in zip(individual, train_data[train_index])])
+        return sum([a * b for a, b in zip(individual, self.train_data[train_index])])
 
     def cost_function(self, individual):
         n = len(self.train_data)
         total = 0
         for i in range(n):
-            total += abs(self.estimate(individual, i) - self.train_targets[i])
+            total += abs(self.estimate(individual, i) -
+                         self.train_targets[i])
 
         return (1 / n) * total
 
@@ -65,36 +67,47 @@ class GeneticAlgorithm:
             self.elite[best[0]] = best[1]
 
     def breed(self, parent_1, parent_2):
-        child_1 = [0] * len(parent_1)
-        gene_a = 0
-        gene_b = 0
-        while gene_a == gene_b:
-            gene_a = int(random.random() * len(parent_1))
-            gene_b = int(random.random() * len(parent_1))
+        child_1 = []
+        child_2 = []
+        pos = 0
+        while pos == 0:
+            pos = int(random.random() * len(parent_1))
 
-        start_gene = min(gene_a, gene_b)
-        end_gene = max(gene_a, gene_b)
-        # Child 1
-        for i in range(start_gene, end_gene + 1):
-            child_1[i] = parent_1[i]
+        child_1.extend(parent_1[:pos])
+        child_1.extend(parent_2[pos:])
+        child_2.extend(parent_2[:pos])
+        child_2.extend(parent_1[pos:])
 
-        # Child 1
-        for i in range(len(parent_2)):
-            if i not in range(start_gene, end_gene + 1):
-                child_1[i] = parent_2[i]
+        # child_1 = [0] * len(parent_1)
+        # gene_a = 0
+        # gene_b = 0
+        # while gene_a == gene_b:
+        #     gene_a = int(random.random() * len(parent_1))
+        #     gene_b = int(random.random() * len(parent_1))
 
-        missing = list(set(parent_2) - set(parent_1))
-        count = 0
-        for i in range(len(child_1)):
-            if child_1[i] == 0:
-                child_1[i] = missing[count]
-                count += 1
+        # start_gene = min(gene_a, gene_b)
+        # end_gene = max(gene_a, gene_b)
+        # # Child 1
+        # for i in range(start_gene, end_gene + 1):
+        #     child_1[i] = parent_1[i]
 
-        child_2 = parent_1 + parent_2
-        child_2 = list(child_2)
-        for elem in child_1:
-            if elem in child_2:
-                child_2.remove(elem)
+        # # Child 1
+        # for i in range(len(parent_2)):
+        #     if i not in range(start_gene, end_gene + 1):
+        #         child_1[i] = parent_2[i]
+
+        # missing = list(set(parent_2) - set(parent_1))
+        # count = 0
+        # for i in range(len(child_1)):
+        #     if child_1[i] == 0:
+        #         child_1[i] = missing[count]
+        #         count += 1
+
+        # child_2 = parent_1 + parent_2
+        # child_2 = list(child_2)
+        # for elem in child_1:
+        #     if elem in child_2:
+        #         child_2.remove(elem)
 
         return tuple(child_1), tuple(child_2)
 
@@ -111,15 +124,19 @@ class GeneticAlgorithm:
 
     def mutate(self, child):
         child = list(child)
-        location_1 = 0
-        location_2 = 0
-        while location_1 == location_2:
-            location_1 = int(random.random() * len(child))
-            location_2 = int(random.random() * len(child))
-        genotype_one = child[location_1]
-        genotype_two = child[location_2]
-        child[location_1] = genotype_two
-        child[location_2] = genotype_one
+
+        location = int(random.random() * len(child))
+        child[location] = random.uniform(self.lower, self.upper)
+
+        # location_1 = 0
+        # location_2 = 0
+        # while location_1 == location_2:
+        #     location_1 = int(random.random() * len(child))
+        #     location_2 = int(random.random() * len(child))
+        # genotype_one = child[location_1]
+        # genotype_two = child[location_2]
+        # child[location_1] = genotype_two
+        # child[location_2] = genotype_one
 
         return tuple(child)
 
@@ -144,8 +161,6 @@ class GeneticAlgorithm:
         for i in range(self.elite_size):
             new_elite[sorted_elite[i][0]] = sorted_elite[i][1]
         self.elite = new_elite
-        gen_best = min(self.elite.items(), key=operator.itemgetter(1))
-        self.history.append(gen_best[1])
 
     def run(self):
         self.initialise_population()
@@ -157,12 +172,13 @@ class GeneticAlgorithm:
             self.next_generation()
         return min(self.elite.items(), key=operator.itemgetter(1))
 
-    def timed_run(self, seconds):
+    def timed_run(self):
         start = time.time()
-        finish = start + seconds
+        finish = start + self.seconds
         generations = 0
         self.initialise_population()
         self.selection_by_tournament(self.K)
+        print(min(self.elite.items(), key=operator.itemgetter(1)))
         while start < finish:
             self.breed_population()
             self.mutate_children()
@@ -173,9 +189,11 @@ class GeneticAlgorithm:
 
     def test(self):
         best = min(self.elite.items(), key=operator.itemgetter(1))[0]
-        n = len(self.test_targets)
-        total = 0
-        for i in range(n):
-            total += abs(self.estimate(best, i) - self.train_targets[i])
+        cost = 0
+        for i in range(len(self.test_targets)):
+            pred = sum([a * b for a, b in zip(best, list(self.test_data[i]))])
+            print("Target: {}\tPrediction: {}".format(
+                self.test_targets[i], pred))
+            cost += abs(pred - self.test_targets[i])
 
-        return (1 / n) * total
+        print("\nTest Cost: {}".format(cost * (1 / len(self.test_targets))))
